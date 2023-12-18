@@ -1,0 +1,68 @@
+Ingesting Data into Hadoop DFS Data Lake
+To ingest the data into Hadoop, you might use tools like hdfs dfs -put or Python libraries like hdfs3.
+
+2. Extracting Data with PySpark
+Using PySpark, you can read data from Hadoop DFS:
+
+python
+Copy code
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("COVID19_Analysis").getOrCreate()
+
+# Read data from Hadoop DFS
+data = spark.read.csv("hdfs://your_hadoop_path/data_file.csv", header=True)
+3. Pre-processing Data
+Pre-processing steps may involve handling missing values, transforming data types, scaling, or encoding categorical variables:
+
+python
+Copy code
+from pyspark.sql.functions import when
+
+# Handling missing values
+data = data.fillna(0)  # Replace NaN with 0
+
+# Convert columns to appropriate data types
+data = data.withColumn("ConfirmedCases", data["ConfirmedCases"].cast("int"))
+
+# Feature encoding or scaling if required
+# ...
+4. Applying Predictive Analytics Technique
+For predictive modeling, you might use regression or classification algorithms from PySpark's MLlib:
+
+python
+Copy code
+from pyspark.ml.feature import VectorAssembler
+from pyspark.ml.regression import LinearRegression
+
+# Prepare features and label
+assembler = VectorAssembler(inputCols=["feature1", "feature2", ...], outputCol="features")
+data = assembler.transform(data)
+
+# Train a linear regression model
+lr = LinearRegression(featuresCol="features", labelCol="ConfirmedCases")
+model = lr.fit(data)
+5. Visualizing the Model
+For model visualization, you can use libraries like Matplotlib or Seaborn:
+
+python
+Copy code
+import matplotlib.pyplot as plt
+
+# Example visualization
+predictions = model.transform(data)
+predictions.select("ConfirmedCases", "prediction").show()
+
+# Plotting
+# ...
+6. Testing the Model
+Evaluate the model's performance using test data:
+
+python
+Copy code
+# Split data into train and test sets
+train_data, test_data = data.randomSplit([0.8, 0.2])
+
+# Evaluate model
+evaluator = RegressionEvaluator(labelCol="ConfirmedCases", predictionCol="prediction")
+rmse = evaluator.evaluate(predictions)
